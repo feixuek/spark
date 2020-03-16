@@ -1,13 +1,13 @@
-# Apache Spark 官方文档中文版，个人翻译学习使用
+# Apache Spark 官方文档中文版，个人翻译学习使用，以Python语言为主
 
 ![](docs/img/spark-logo-hd.png)   
 
-Apache Spark 是一个快速的，用于海量数据处理的通用引擎。
+`Apache Spark`是一个快速的，用于海量数据处理的通用引擎。
 
-+   [Spark 概述](docs/Overview.md)
-+   [编程指南](docs/Programming_guides.md)
-    +   [快速入门](docs/Quick_start.md)
-    +   [RDD编程指南](docs/RDDs_Accumulators_BroadcastsVars.md)
++   [Spark 概述](overview.md)
++   [编程指南](guides/README.md)
+    +   [快速开始](guides/quickstart.md)
+    +   [RDD编程指南](guides/rdd.md)
     +   [Spark SQL, DataFrames and Datasets Guide](docs/SQL_DataFrames_Datasets.md)
     +   [Spark Streaming 编程指南](docs/Spark_streaming.md)
     +   [MLlib](docs/MLlib.md)

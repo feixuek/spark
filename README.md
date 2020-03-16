@@ -8,7 +8,7 @@
 +   [编程指南](guides/README.md)
     +   [快速开始](guides/quickstart.md)
     +   [RDD编程指南](guides/rdd.md)
-    +   [Spark SQL, DataFrames and Datasets Guide](docs/SQL_DataFrames_Datasets.md)
+    +   [Spark SQL编程指南](guides/sql.md)
     +   [Spark Streaming 编程指南](docs/Spark_streaming.md)
     +   [MLlib](docs/MLlib.md)
     +   [GraphX Programming Guide](docs/GraphX.md)

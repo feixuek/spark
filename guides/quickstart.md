@@ -1,8 +1,8 @@
 # 快速开始
 *   [安全](#安全)
-*   [使用`Spark Shell`进行交互式分析](#使用`Spark-Shell`进行交互式分析)
+*   [使用Spark-Shell进行交互式分析](#使用Spark-Shell进行交互式分析)
     *   [基础](#基础)
-    *   [`Dataset`上的更多操作](#`Dataset`上的更多操作)
+    *   [Dataset上的更多操作](#Dataset上的更多操作)
     *   [缓存](#缓存)
 *   [独立的应用](#独立的应用)
 *   [快速跳转](#快速跳转)
@@ -11,7 +11,7 @@
 
 为了继续阅读本指南，首先从[`Spark`官网](http://spark.apache.org/downloads.html) 下载`Spark`的发行包。因为我们将不使用`HDFS`，所以你可以下载一个任何`Hadoop` 版本的软件包。
 
-请注意，在`Spark 2.0`之前，`Spark`的主要编程接口是弹性分布式数据集（`RDD`）。 在`Spark 2.0`之后，`RDD`被`Dataset`替换，它是像`RDD`一样的强类型，但是在引擎下更加优化。 `RDD`接口仍然受支持，您可以在[`RDD`编程指南](https://spark.apache.org/docs/latest/rdd-programming-guide.html) 中获得更完整的参考。 但是，我们强烈建议您切换到使用`Dataset`，其性能要更优于`RDD`。请参阅[`SQL`编程指南](https://spark.apache.org/docs/latest/rdd-programming-guide.html) 获取更多有关`Dataset`的信息。
+请注意，在`Spark 2.0`之前，`Spark`的主要编程接口是弹性分布式数据集（`RDD`）。 在`Spark 2.0`之后，`RDD`被`Dataset`替换，它是像`RDD`一样的强类型，但是在引擎下性能更优。 `RDD`接口仍然受支持，您可以在[`RDD`编程指南](https://spark.apache.org/docs/latest/rdd-programming-guide.html) 中获得更完整的参考。 但是，我们强烈建议您切换到使用`Dataset`，其性能要更优于`RDD`。请参阅[`SQL`编程指南](https://spark.apache.org/docs/latest/rdd-programming-guide.html) 获取更多有关`Dataset`的信息。
 
 ## 安全
 `Spark`中的安全性默认为`OFF`。 这可能意味着您很容易受到默认攻击。 在下载和运行`Spark`之前，请参阅[`Spark Security`](https://spark.apache.org/docs/latest/security.html)。

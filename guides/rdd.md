@@ -1,45 +1,45 @@
 # `RDD`编程指南
 
 *   [概述](#概述)
-*   [与`Spark`链接](#与`Spark`链接)
-*   [初始化`Spark`](#初始化`Spark`)
-    *   [使用`Shell`](#使用`Shell`)
+*   [与Spark链接](#与Spark链接)
+*   [初始化Spark](#初始化Spark)
+    *   [使用Shell](#使用Shell)
 *   [弹性分布式数据集](#弹性分布式数据集)
     *   [并行集合](#并行集合)
     *   [外部数据集）](#外部数据集)
-    *   [`RDD`操作](#`RDD`操作)
+    *   [RDD操作](#RDD操作)
         *   [基础](#基础)
-        *   [传递函数给`Spark`](#传递函数给`Spark`)
+        *   [传递函数给Spark](#传递函数给Spark)
         *   [理解闭包](#理解闭包)
             *   [示例](#示例)
             *   [本地vs集群模式](#本地vs集群模式)
-            *   [打印`RDD`的元素](#打印`RDD`的元素)
+            *   [打印RDD的元素](#打印RDD的元素)
         *   [与键值对一起使用](#与键值对一起使用)
-        *   [`Transformations`](#`Transformations`)
-        *   [`Actions`](#`Actions`)
-        *   [`Shuffle`](#`Shuffle`)
+        *   [Transformations](#Transformations)
+        *   [Actions](#Actions)
+        *   [Shuffle](#Shuffle)
             *   [幕后）](#幕后)
             *   [性能影响](#性能影响)
-    *   [`RDD`持久化）](#`RDD`持久化)
+    *   [RDD持久化）](#RDD持久化)
         *   [如何选择存储级别 ](#如何选择存储级别)
         *   [删除数据](#删除数据)
 *   [共享变量](#共享变量)
     *   [广播变量](#广播变量)
     *   [累加器](#累加器)
 *   [部署应用到集群中](#部署应用到集群中)
-*   [从`Java/Scala`启动`Spark-jobs`](#从`Java/Scala`启动`Spark-jobs)
+*   [从Java/Scala启动Spark-jobs](#从Java/Scala启动Spark-jobs)
 *   [单元测试](#单元测试)
 *   [快速链接](#快速链接)
 
 ## 概述
 
-在一个较高的概念上来说，每一个`Spark`应用程序由一个在集群上运行着用户的 `main` 函数和执行各种并行操作的 _driver program_组成。`Spark`提供的主要抽象是一个 _弹性分布式数据集_（`RDD`），它是可以执行并行操作且跨集群节点的元素的集合。`RDD`可以从一个`Hadoop`文件系统（或者任何其它`Hadoop` 支持的文件系统），或者一个在驱动程序中已存在的`Scala`集合，以及通过`transforming`来创建。用户为了让它在整个并行操作中更高效的重用，也许会让`Spark persist`一个`RDD`到内存中。最后,`RDD`会自动的从节点故障中恢复。
+在一个较高的概念上来说，每一个`Spark`应用程序由一个在集群上运行着用户的 `main` 函数和执行各种并行操作的组成。`Spark`提供的主要抽象是一个 _弹性分布式数据集_（`RDD`），它是可以执行并行操作且跨集群节点的元素的集合。`RDD`可以从一个`Hadoop`文件系统（或者任何其它`Hadoop` 支持的文件系统），或者一个在驱动程序中已存在的`Scala`集合，以及通过`transforming`来创建。用户为了让它在整个并行操作中更高效的重用，也许会让`Spark persist`一个`RDD`到内存中。最后,`RDD`会自动的从节点故障中恢复。
 
 在`Spark`中的第二个抽象是能够用于并行操作的 _shared variables_（共享变量），默认情况下，当`Spark`的一个函数作为一组不同节点上的任务运行时，它将每一个变量的副本应用到每一个任务的函数中去。有时候，一个变量需要在整个任务中，或者在任务和驱动程序之间来共享。`Spark`支持两种类型的共享变量：_broadcast variables_（广播变量），它可以用于在所有节点上缓存一个值，和 _accumulators_（累加器），他是一个只能被 `added` 的变量，例如`counters`和`sums`。
 
 本指南介绍了每一种`Spark`所支持的语言的特性。如果您启动`Spark`的交互式`shell` - 针对`Scala shell`使用 `bin/spark-shell` 或者针对`Python`使用`bin/pyspark` 是很容易来学习的。
 
-## 与`Spark`链接
+## 与Spark链接
 `Spark 2.4.5`适用于`Python 2.7+`或`Python 3.4+`。它可以使用标准的`CPython`解释器，因此可以使用`NumPy`之类的`C`库。它还适用于`PyPy 2.3+`。
 
 在`Spark 2.2.0`中删除了对`Python 2.6`的支持。
@@ -64,7 +64,7 @@ $ PYSPARK_PYTHON=python3.4 bin/pyspark
 $ PYSPARK_PYTHON=/opt/pypy-2.5/bin/pypy bin/spark-submit examples/src/main/python/pi.py
 ```
 
-## 初始化`Spark`
+## 初始化Spark
 
 `Spark`程序必须做的第一件事是创建一个[`SparkContext`](https://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.SparkContext)对象，它告诉`Spark`如何访问集群。 要创建`SparkContext`，首先需要构建一个包含有关应用程序信息的[`SparkConf`](https://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.SparkConf)对象。
 ```Python
@@ -74,7 +74,7 @@ sc = SparkContext(conf=conf)
 
 这个 `appName` 参数是一个在集群`UI`上展示应用程序的名称。`master` 是一个[`Spark`，`Mesos`或`YARN`的`cluster URL`](https://spark.apache.org/docs/latest/submitting-applications.html)，或者指定为在`local mode`（本地模式）中运行的 "local" 字符串。在实际工作中，当在集群上运行时，您不希望在程序中将`master` 给硬编码，而是用 [使用 `spark-submit` 启动应用](https://spark.apache.org/docs/latest/submitting-applications.html) 并且接收它。然而，对于本地测试和单元测试，您可以通过 "local" 来运行`Spark`进程。
 
-### 使用`Shell`
+### 使用Shell
 
 在`PySpark shell`中，已经为你创建了一个特殊的解释器`SparkContext`，名为`sc`。 制作自己的`SparkContext`将无法正常工作。 您可以使用`--master`参数设置上下文连接到的主服务器，并且可以通过将逗号分隔的列表传递给`--py-files`将`Python` `.zip`，`.egg`或`.py`文件添加到运行时路径。 您还可以通过向`--packages`参数提供以逗号分隔的`Maven`坐标列表，将依赖项（例如`Spark`包）添加到`shell`会话中。 任何可能存在依赖关系的其他存储库（例如`Sonatype`）都可以传递给`--repositories`参数。 必要时，必须使用`pip`手动安装`Spark`软件包具有的任何`Python`依赖项（在该软件包的`requirements.txt`中列出）。 例如，要在四个核心上运行`bin/pyspark`，请使用：
 
@@ -205,7 +205,7 @@ $ ./bin/pyspark --jars /path/to/elasticsearch-hadoop.jar
 
 有关使用`Cassandra/HBase InputFormat`和`OutputFormat`以及自定义转换器的示例，请参阅[`Python`示例](https://github.com/apache/spark/tree/master/examples/src/main/python)和[`Converter`示例](https://github.com/apache/spark/tree/master/examples/src/main/scala/org/apache/spark/examples/pythonconverters)。
 
-### `RDD`操作
+### RDD操作
 
 `RDD` 支持两种类型的操作：_transformations_：它会在一个已存在的`dataset`上创建一个新的`dataset`，和 _actions_：将在`dataset` 上运行的计算后返回到驱动程序。例如，`map` 是一个通过让每个数据集元素都执行一个函数，并返回的新`RDD`结果的`transformation`，`reduce` 通过执行一些函数，聚合`RDD`中所有元素，并将最终结果给返回驱动程序（虽然也有一个并行 `reduceByKey` 返回一个分布式数据集）的`action`.
 
@@ -233,7 +233,7 @@ lineLengths.persist()
 
 在`reduce`之前，这将导致`lineLengths`在第一次计算之后保存在内存中。
 
-#### 传递函数给`Spark`
+#### 传递函数给Spark
 
 `Spark`的`API`在很大程度上依赖于在驱动程序中传递函数以在集群上运行。 有三种建议的方法可以做到这一点：
 
@@ -317,11 +317,11 @@ print("Counter value: ", counter)
 
 在一般情况下，`closures - constructs`像循环或本地定义的方法，不应该被用于改动一些全局状态。`Spark`没有规定或保证突变的行为，以从封闭件的外侧引用的对象。一些代码，这可能以本地模式运行，但是这只是偶然和这样的代码如预期在分布式模式下不会表现。如果需要一些全局的聚合功能，应使用`Accumulator`（累加器）。
 
-##### 打印`RDD`的元素
+##### 打印RDD的元素
 
 另一种常见的语法用于打印`RDD`的所有元素使用 `rdd.foreach(println)` 或 `rdd.map(println)`。在一台机器上，这将产生预期的输出和打印`RDD`的所有元素。然而，在集群 `cluster` 模式下，`stdout` 输出正在被执行写操作`executors`的 `stdout` 代替，而不是在一个驱动程序上，因此 `stdout` 的 `driver` 程序不会显示这些要打印 `driver` 程序的所有元素，可以使用的 `collect()` 方法首先把`RDD`放到`driver`程序节点上：`rdd.collect().foreach(println)`。这可能会导致`driver`程序耗尽内存，虽说，因为 `collect()` 获取整个`RDD`到一台机器; 如果你只需要打印`RDD`的几个元素，一个更安全的方法是使用 `take()`：`rdd.take(100).foreach(println)`。
 
-#### 与键值对一起使用
+### 与键值对一起使用
 
 虽然大多数`Spark`操作都适用于包含任何类型对象的`RDD`，但一些特殊操作仅适用于键值对的`RDD`。 最常见的是分布式"shuffle"操作，例如通过密钥对元素进行分组或聚合。
 
@@ -337,7 +337,7 @@ counts = pairs.reduceByKey(lambda a, b: a + b)
 
 例如，我们也可以使用`counts.sortByKey（）`来按字母顺序对这些对进行排序，最后使用`counts.collect（）`将它们作为对象列表返回给驱动程序。
 
-#### `Transformations`
+#### Transformations
 
 下表列出了一些`Spark`常用的`transformations`。详情请参考`RDD API`文档（[`Scala`](api/scala/index.html#org.apache.spark.rdd.RDD)，[`Java`](api/java/index.html?org/apache/spark/api/java/JavaRDD.html)，[`Python`](api/python/pyspark.html#pyspark.RDD)，[`R`](api/R/index.html)）和`pair RDD`函数文档（[`Scala`](api/scala/index.html#org.apache.spark.rdd.PairRDDFunctions)，[`Java`](api/java/index.html?org/apache/spark/api/java/JavaPairRDD.html)）。
 
@@ -364,7 +364,7 @@ counts = pairs.reduceByKey(lambda a, b: a + b)
 | **repartition**(_numPartitions_) | `Reshuffle`（重新洗牌`RDD`中的数据以创建或者更多的 `partitions`（分区）并将每个分区中的数据尽量保持均匀。该操作总是通过网络来`shuffles`所有的数据。 |
 | **repartitionAndSortWithinPartitions**(_partitioner_) | 根据给定的`partitioner`（分区器）对`RDD`进行重新分区，并在每个结果分区中，按照`key` 值对记录排序。这比每一个分区中先调用 `repartition` 然后再排序效率更高，因为它可以将排序过程推送到`shuffle`操作的机器上进行。 |
 
-#### `Actions`
+#### Actions
 
 下表列出了一些`Spark`常用的`actions`操作。详细请参考`RDD API`文档（[`Scala`](api/scala/index.html#org.apache.spark.rdd.RDD)，[`Java`](api/java/index.html?org/apache/spark/api/java/JavaRDD.html)，[`Python`](api/python/pyspark.html#pyspark.RDD)，[`R`](api/R/index.html)）和`RDD`函数文档（[`Scala`](api/scala/index.html#org.apache.spark.rdd.PairRDDFunctions)，[`Java`](api/java/index.html?org/apache/spark/api/java/JavaPairRDD.html)）。
 
@@ -387,7 +387,7 @@ counts = pairs.reduceByKey(lambda a, b: a + b)
 
 该`Spark RDD API`还暴露了一些`actions`的异步版本，例如针对 `foreach` 的 `foreachAsync`，它们会立即返回一个`FutureAction` 到调用者，而不是在完成`action` 时阻塞。这可以用于管理或等待`action`的异步执行。.
 
-#### `Shuffle`
+#### Shuffle
 
 `Spark`里的某些操作会触发`shuffle`。`shuffle`是`spark`重新分配数据的一种机制，使得这些数据可以跨不同的区域进行分组。这通常涉及在`executors`和机器之间拷贝数据，这使得`shuffle`成为一个复杂的、代价高的操作。
 
@@ -417,7 +417,7 @@ counts = pairs.reduceByKey(lambda a, b: a + b)
 
 `shuffle`操作的行为可以通过调节多个参数进行设置。详细的说明请看[`Spark`配置指南](configuration.html) 中的 "Shuffle 行为"部分。
 
-### `RDD`持久化
+### RDD持久化
 
 `Spark`中一个很重要的能力是将数据 _persisting_ 持久化（或称为 _caching_ 缓存），在多个操作间都可以访问这些持久化的数据。当持久化一个`RDD` 时，每个节点的其它分区都可以使用`RDD`在内存中进行计算，在该数据上的其他`action`操作将直接使用内存中的数据。这样会让以后的`action` 操作计算速度加快（通常运行速度会加速10倍）。缓存是迭代算法和快速的交互式使用的重要工具。
 
@@ -539,7 +539,7 @@ data.map(g)
 
 该[应用提交指南](https://spark.apache.org/docs/latest/api/java/index.html?org/apache/spark/launcher/package-summary.html) 描述了如何将应用提交到集群中。简单的说，在您将应用打包成一个`JAR`（针对`Java/Scala`）或者一组 `.py` 或 `.zip` 文件（针对 `Python`），该 `bin/spark-submit` 脚本可以让你提交它到任何所支持的 `cluster manager`上去.
 
-## 从`Java/Scala`启动`Spark-jobs`
+## 从Java/Scala启动Spark-jobs
 
 该[`org.apache.spark.launcher`](https://spark.apache.org/docs/latest/api/java/index.html?org/apache/spark/launcher/package-summary.html) `package `提供了`classes`用于使用简单的`Java API`来作为一个子进程启动`Spark jobs`.
 
